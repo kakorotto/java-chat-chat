@@ -39,7 +39,7 @@ This application follows a microservices architecture with the following compone
 
 ## 📋 Prerequisites
 
-- Java 17 or higher
+- Java 11 or higher
 - Maven 3.6+
 - Docker and Docker Compose
 - Git
@@ -234,3 +234,4 @@ Key configuration files:
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
