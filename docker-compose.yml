@@ -1,0 +1,174 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Databases
+  postgres-auth:
+    image: postgres:15
+    container_name: postgres-auth
+    environment:
+      POSTGRES_DB: chatapp_auth
+      POSTGRES_USER: chatapp_user
+      POSTGRES_PASSWORD: chatapp_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    networks:
+      - chatapp-network
+
+  postgres-chat:
+    image: postgres:15
+    container_name: postgres-chat
+    environment:
+      POSTGRES_DB: chatapp_chat
+      POSTGRES_USER: chatapp_user
+      POSTGRES_PASSWORD: chatapp_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_chat_data:/var/lib/postgresql/data
+    networks:
+      - chatapp-network
+
+  postgres-users:
+    image: postgres:15
+    container_name: postgres-users
+    environment:
+      POSTGRES_DB: chatapp_users
+      POSTGRES_USER: chatapp_user
+      POSTGRES_PASSWORD: chatapp_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_users_data:/var/lib/postgresql/data
+    networks:
+      - chatapp-network
+
+  postgres-notifications:
+    image: postgres:15
+    container_name: postgres-notifications
+    environment:
+      POSTGRES_DB: chatapp_notifications
+      POSTGRES_USER: chatapp_user
+      POSTGRES_PASSWORD: chatapp_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_notifications_data:/var/lib/postgresql/data
+    networks:
+      - chatapp-network
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: redis-chatapp
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - chatapp-network
+
+  # Eureka Server
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - postgres-auth
+    networks:
+      - chatapp-network
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+    networks:
+      - chatapp-network
+
+  # Auth Service
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-auth:5432/chatapp_auth
+    depends_on:
+      - eureka-server
+      - postgres-auth
+    networks:
+      - chatapp-network
+
+  # Chat Service
+  chat-service:
+    build: ./chat-service
+    container_name: chat-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-chat:5432/chatapp_chat
+      - SPRING_REDIS_HOST=redis
+    depends_on:
+      - eureka-server
+      - postgres-chat
+      - redis
+    networks:
+      - chatapp-network
+
+  # User Service
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-users:5432/chatapp_users
+    depends_on:
+      - eureka-server
+      - postgres-users
+    networks:
+      - chatapp-network
+
+  # Notification Service
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-notifications:5432/chatapp_notifications
+    depends_on:
+      - eureka-server
+      - postgres-notifications
+    networks:
+      - chatapp-network
+
+volumes:
+  postgres_auth_data:
+  postgres_chat_data:
+  postgres_users_data:
+  postgres_notifications_data:
+  redis_data:
+
+networks:
+  chatapp-network:
+    driver: bridge

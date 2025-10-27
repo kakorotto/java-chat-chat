@@ -1,0 +1,10 @@
+server:
+  port: 3000
+
+spring:
+  application:
+    name: client-app
+
+logging:
+  level:
+    com.chatapp.client: DEBUG

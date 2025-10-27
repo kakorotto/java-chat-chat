@@ -1,0 +1,71 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.feature-box {
+  padding: 20px;
+  text-align: center;
+}
+
+.feature-box h5 {
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+#messages {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+}
+
+.message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.message.own {
+  background-color: #007bff;
+  color: white;
+  margin-left: 20%;
+}
+
+.message.other {
+  background-color: #e9ecef;
+  margin-right: 20%;
+}
+
+.message-header {
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+.message-time {
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+
+#roomList .room-item {
+  padding: 10px;
+  border-bottom: 1px solid #dee2e6;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#roomList .room-item:hover {
+  background-color: #f8f9fa;
+}
+
+#roomList .room-item.active {
+  background-color: #007bff;
+  color: white;
+}
