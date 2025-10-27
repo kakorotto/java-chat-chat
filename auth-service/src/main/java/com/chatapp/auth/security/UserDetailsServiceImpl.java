@@ -1,5 +1,6 @@
 package com.chatapp.auth.security;
 
+import com.chatapp.auth.model.User;
 import com.chatapp.auth.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
