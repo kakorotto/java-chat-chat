@@ -13,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Optional;
 
 @Service
@@ -56,7 +57,7 @@ public class ChatService {
         return memberships.stream()
                 .map(member -> chatRoomRepository.findById(member.getRoomId()).orElse(null))
                 .filter(room -> room != null)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public Message sendMessage(SendMessageRequest request, Long userId) {

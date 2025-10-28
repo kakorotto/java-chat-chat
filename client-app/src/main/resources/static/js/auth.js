@@ -3,15 +3,37 @@ const API_BASE_URL = "http://localhost:8080/api";
 
 let currentUser = null;
 let authToken = null;
+let csrfToken = null;
+
+// Get CSRF token
+async function getCsrfToken() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/csrf`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (response.ok) {
+      const data = await response.json();
+      csrfToken = data.token;
+      return csrfToken;
+    }
+  } catch (error) {
+    console.error("Failed to get CSRF token:", error);
+  }
+  return null;
+}
 
 // Login function
 async function login(username, password) {
   try {
+    await getCsrfToken(); // Get CSRF token first
     const response = await fetch(`${API_BASE_URL}/auth/signin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-CSRF-TOKEN": csrfToken || "",
       },
+      credentials: "include",
       body: JSON.stringify({ username, password }),
     });
 
@@ -42,11 +64,14 @@ async function login(username, password) {
 // Register function
 async function register(username, email, password) {
   try {
+    await getCsrfToken(); // Get CSRF token first
     const response = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-CSRF-TOKEN": csrfToken || "",
       },
+      credentials: "include",
       body: JSON.stringify({ username, email, password }),
     });
 

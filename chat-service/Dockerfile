@@ -1,14 +1,15 @@
-# Use OpenJDK 11 as base image
 FROM openjdk:11-jdk-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy the JAR file
-COPY target/chat-service-1.0.0.jar app.jar
+# Install Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+
+# Copy project files
+COPY . .
 
 # Expose port
 EXPOSE 8082
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run with Maven directly
+CMD ["mvn", "spring-boot:run", "-pl", "chat-service", "-Dspring-boot.run.arguments=--server.port=8082"]

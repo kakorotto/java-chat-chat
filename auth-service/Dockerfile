@@ -1,29 +1,15 @@
-# Multi-stage build
-FROM openjdk:11-jdk-slim as builder
+FROM openjdk:11-jdk-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy entire project structure
-COPY . .
-
-# Download dependencies
+# Install Maven
 RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
-RUN mvn dependency:go-offline -B
 
-# Build the application
-RUN mvn clean package -DskipTests -pl auth-service
-
-# Runtime stage
-FROM openjdk:11-jre-slim
-
-WORKDIR /app
-
-# Copy the JAR file from builder stage
-COPY --from=builder /app/auth-service/target/auth-service-1.0.0.jar app.jar
+# Copy project files
+COPY . .
 
 # Expose port
 EXPOSE 8081
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run with Maven directly
+CMD ["mvn", "spring-boot:run", "-pl", "auth-service", "-Dspring-boot.run.arguments=--server.port=8081"]

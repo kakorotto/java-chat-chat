@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 COPY . .
 
 # Expose port
-EXPOSE 8083
+EXPOSE 3000
 
 # Run with Maven directly
-CMD ["mvn", "spring-boot:run", "-pl", "user-service", "-Dspring-boot.run.arguments=--server.port=8083"]
+CMD ["mvn", "spring-boot:run", "-pl", "client-app", "-Dspring-boot.run.arguments=--server.port=3000"]
