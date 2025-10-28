@@ -5,7 +5,7 @@ import com.chatapp.chat.dto.SendMessageRequest;
 import com.chatapp.chat.model.ChatRoom;
 import com.chatapp.chat.model.Message;
 import com.chatapp.chat.service.ChatService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
