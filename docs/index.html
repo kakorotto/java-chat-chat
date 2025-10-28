@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Chat SaaS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .feature-box {
+      padding: 20px;
+      text-align: center;
+    }
+    .feature-box h5 {
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+    .card {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: none;
+    }
+    .navbar-brand {
+      font-weight: bold;
+    }
+    #messages {
+      background-color: #ffffff;
+      border: 1px solid #dee2e6;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .message.own {
+      background-color: #007bff;
+      color: white;
+      margin-left: 20%;
+    }
+    .message.other {
+      background-color: #e9ecef;
+      margin-right: 20%;
+    }
+    .message-header {
+      font-weight: bold;
+      font-size: 0.9em;
+      margin-bottom: 5px;
+    }
+    .message-time {
+      font-size: 0.8em;
+      opacity: 0.7;
+    }
+    #roomList .room-item {
+      padding: 10px;
+      border-bottom: 1px solid #dee2e6;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #roomList .room-item:hover {
+      background-color: #f8f9fa;
+    }
+    #roomList .room-item.active {
+      background-color: #007bff;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">Java Chat SaaS</a>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link" href="#login">Login</a>
+        <a class="nav-link" href="#register">Register</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Home Page -->
+  <div id="home" class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-body text-center">
+            <h1 class="card-title">Welcome to Java Chat SaaS</h1>
+            <p class="card-text">A modern, scalable chat application built with Spring Boot microservices architecture.</p>
+            <div class="row mt-4">
+              <div class="col-md-4">
+                <div class="feature-box">
+                  <h5>Real-time Chat</h5>
+                  <p>WebSocket-powered instant messaging</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="feature-box">
+                  <h5>Microservices</h5>
+                  <p>Scalable architecture with Docker</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="feature-box">
+                  <h5>Secure</h5>
+                  <p>JWT-based authentication</p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4">
+              <a href="#register" class="btn btn-primary btn-lg">Get Started</a>
+              <a href="#login" class="btn btn-outline-primary btn-lg ms-2">Login</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Page -->
+  <div id="login" class="container mt-5" style="display: none;">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-center">Login</h3>
+          </div>
+          <div class="card-body">
+            <form id="loginForm">
+              <div class="mb-3">
+                <label for="loginUsername" class="form-label">Username</label>
+                <input type="text" class="form-control" id="loginUsername" required>
+              </div>
+              <div class="mb-3">
+                <label for="loginPassword" class="form-label">Password</label>
+                <input type="password" class="form-control" id="loginPassword" required>
+              </div>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Login</button>
+              </div>
+            </form>
+            <div class="text-center mt-3">
+              <p>Don't have an account? <a href="#register">Register here</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Page -->
+  <div id="register" class="container mt-5" style="display: none;">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-center">Register</h3>
+          </div>
+          <div class="card-body">
+            <form id="registerForm">
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" required>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" required>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" required>
+              </div>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Register</button>
+              </div>
+            </form>
+            <div class="text-center mt-3">
+              <p>Already have an account? <a href="#login">Login here</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Page -->
+  <div id="chat" class="container-fluid mt-3" style="display: none;">
+    <div class="row">
+      <!-- Sidebar -->
+      <div class="col-md-3">
+        <div class="card">
+          <div class="card-header">
+            <h5>Chat Rooms</h5>
+            <button class="btn btn-primary btn-sm" onclick="showCreateRoomModal()">
+              Create Room
+            </button>
+          </div>
+          <div class="card-body">
+            <div id="roomList">
+              <!-- Rooms will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="col-md-9">
+        <div class="card">
+          <div class="card-header">
+            <h5 id="currentRoom">Select a room to start chatting</h5>
+          </div>
+          <div class="card-body" style="height: 500px; overflow-y: auto;" id="messages">
+            <!-- Messages will be displayed here -->
+          </div>
+          <div class="card-footer">
+            <div class="input-group">
+              <input type="text" class="form-control" id="messageInput" placeholder="Type your message..." disabled>
+              <button class="btn btn-primary" id="sendButton" disabled>Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Room Modal -->
+  <div class="modal fade" id="createRoomModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Create New Room</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="createRoomForm">
+            <div class="mb-3">
+              <label for="roomName" class="form-label">Room Name</label>
+              <input type="text" class="form-control" id="roomName" required>
+            </div>
+            <div class="mb-3">
+              <label for="roomDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="roomDescription" rows="3"></textarea>
+            </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="isPrivate">
+              <label class="form-check-label" for="isPrivate">Private Room</label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="createRoom()">Create Room</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Configuration - Update these URLs to point to your deployed backend
+    const API_BASE_URL = "https://your-api-gateway-url.com/api"; // Update this!
+    
+    let currentUser = null;
+    let authToken = null;
+    let csrfToken = null;
+
+    // Simple routing
+    function showPage(pageId) {
+      document.querySelectorAll('.container, .container-fluid').forEach(page => {
+        page.style.display = 'none';
+      });
+      document.getElementById(pageId).style.display = 'block';
+    }
+
+    // Navigation
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const pageId = this.getAttribute('href').substring(1);
+        showPage(pageId);
+      });
+    });
+
+    // Demo functions (replace with real API calls)
+    function login(username, password) {
+      // Demo login - replace with real API call
+      currentUser = { username: username, email: 'demo@example.com' };
+      alert('Demo login successful! (Replace with real API)');
+      showPage('chat');
+    }
+
+    function register(username, email, password) {
+      // Demo registration - replace with real API call
+      alert('Demo registration successful! (Replace with real API)');
+      showPage('login');
+    }
+
+    function createRoom() {
+      const roomName = document.getElementById('roomName').value;
+      const description = document.getElementById('roomDescription').value;
+      const isPrivate = document.getElementById('isPrivate').checked;
+      
+      // Demo room creation
+      alert(`Demo: Created room "${roomName}" (Replace with real API)`);
+      
+      // Close modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('createRoomModal'));
+      modal.hide();
+      
+      // Clear form
+      document.getElementById('createRoomForm').reset();
+    }
+
+    function showCreateRoomModal() {
+      const modal = new bootstrap.Modal(document.getElementById('createRoomModal'));
+      modal.show();
+    }
+
+    // Form handlers
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      login(username, password);
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      register(username, email, password);
+    });
+
+    // Show home page by default
+    showPage('home');
+  </script>
+</body>
+</html>
