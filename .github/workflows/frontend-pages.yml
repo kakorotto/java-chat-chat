@@ -1,0 +1,59 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'client-app/src/main/resources/**'
+      - '.github/workflows/frontend-pages.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare static site
+        run: |
+          set -e
+          mkdir -p dist
+          # Copy static assets
+          rsync -av --delete client-app/src/main/resources/static/ dist/
+          # Copy HTML templates as top-level pages
+          rsync -av client-app/src/main/resources/templates/ dist/
+
+          REPO_NAME=$(basename "$GITHUB_REPOSITORY")
+          BASE_PATH="/${REPO_NAME}/"
+
+          # Fix absolute links and inject <base> for GitHub Pages routing
+          for f in dist/*.html; do
+            # Insert <base> right after <head>
+            sed -i "0,/<head>/s//<head>\n  <base href=\"${BASE_PATH}\">/" "$f"
+            # Convert absolute asset paths to relative
+            sed -i 's|href="/css/|href="css/|g' "$f"
+            sed -i 's|src="/js/|src="js/|g' "$f"
+            sed -i 's|href="/\"|href="\"|g' "$f"
+            # Convert internal nav to .html files
+            sed -i 's|href="/login"|href="login.html"|g' "$f"
+            sed -i 's|href="/register"|href="register.html"|g' "$f"
+            sed -i 's|href="/"|href="index.html"|g' "$f"
+          done
+
+          # Optionally override API base URL for Pages via env
+          if [ -n "$PAGES_API_BASE_URL" ]; then
+            sed -i "s|^const API_BASE_URL = \"http://localhost:8080/api\";|const API_BASE_URL = \"${PAGES_API_BASE_URL}\";|" dist/js/auth.js || true
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
