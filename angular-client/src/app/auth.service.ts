@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-
-const API_BASE = 'http://localhost:8080/api';
+import { environment } from '../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -13,7 +12,7 @@ export class AuthService {
   async getCsrf(): Promise<string | null> {
     try {
       const res = await firstValueFrom(
-        this.http.get<{ token?: string }>(`${API_BASE}/auth/csrf`, {
+        this.http.get<{ token?: string }>(`${environment.apiBaseUrl}/auth/csrf`, {
           withCredentials: true,
         })
       );
@@ -32,7 +31,7 @@ export class AuthService {
     });
     return firstValueFrom(
       this.http.post<any>(
-        `${API_BASE}/auth/signin`,
+        `${environment.apiBaseUrl}/auth/signin`,
         { username, password },
         { headers, withCredentials: true }
       )
@@ -47,7 +46,7 @@ export class AuthService {
     });
     return firstValueFrom(
       this.http.post<any>(
-        `${API_BASE}/auth/signup`,
+        `${environment.apiBaseUrl}/auth/signup`,
         { username, email, password },
         { headers, withCredentials: true }
       )
