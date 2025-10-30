@@ -1,5 +1,25 @@
 // Authentication functions
-const API_BASE_URL = "http://localhost:8080/api";
+const GATEWAY_BASE_URL = "http://localhost:8080/api";
+const AUTH_SERVICE_BASE_URL = "http://localhost:8081"; // direct to auth-service
+
+async function fetchWithFallback(path, options) {
+  const urls = [
+    `${GATEWAY_BASE_URL}${path}`,
+    `${AUTH_SERVICE_BASE_URL}${path.replace(/^\/api/, "")}`,
+  ];
+
+  let lastError = null;
+  for (const url of urls) {
+    try {
+      const response = await fetch(url, options);
+      // If gateway returns a bad status, don't fallback silently; return it
+      return response;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("Network error");
+}
 
 let currentUser = null;
 let authToken = null;
@@ -8,7 +28,7 @@ let csrfToken = null;
 // Get CSRF token
 async function getCsrfToken() {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/csrf`, {
+    const response = await fetchWithFallback(`/auth/csrf`, {
       method: "GET",
       credentials: "include",
     });
@@ -27,7 +47,7 @@ async function getCsrfToken() {
 async function login(username, password) {
   try {
     await getCsrfToken(); // Get CSRF token first
-    const response = await fetch(`${API_BASE_URL}/auth/signin`, {
+    const response = await fetchWithFallback(`/auth/signin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,7 +85,7 @@ async function login(username, password) {
 async function register(username, email, password) {
   try {
     await getCsrfToken(); // Get CSRF token first
-    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+    const response = await fetchWithFallback(`/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
