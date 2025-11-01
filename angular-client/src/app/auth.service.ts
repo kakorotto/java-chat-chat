@@ -29,13 +29,20 @@ export class AuthService {
       'Content-Type': 'application/json',
       'X-CSRF-TOKEN': this.csrfToken || '',
     });
-    return firstValueFrom(
+    const response = await firstValueFrom(
       this.http.post<any>(
         `${environment.apiBaseUrl}/auth/signin`,
         { username, password },
         { headers, withCredentials: true }
       )
     );
+    
+    // Store user info if available
+    if (response.userId || response.id) {
+      localStorage.setItem('userId', (response.userId || response.id).toString());
+    }
+    
+    return response;
   }
 
   async register(username: string, email: string, password: string) {
