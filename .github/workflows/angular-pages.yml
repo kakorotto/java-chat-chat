@@ -87,6 +87,15 @@ jobs:
         run: |
           # Copy index.html to 404.html for GitHub Pages SPA routing
           cp angular-client/dist/angular-client/index.html angular-client/dist/angular-client/404.html
+          echo "Created 404.html for GitHub Pages SPA routing"
+          # Verify 404.html exists
+          if [ -f angular-client/dist/angular-client/404.html ]; then
+            echo "404.html successfully created"
+            head -5 angular-client/dist/angular-client/404.html
+          else
+            echo "ERROR: 404.html not created!"
+            exit 1
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
