@@ -82,27 +82,51 @@ export class ChatService {
         }
       }
 
-      const socket = new SockJS(environment.wsUrl);
-      this.stompClient = new Client({
-        webSocketFactory: () => socket as any,
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
-        onConnect: () => {
-          console.log('WebSocket connected');
-          this.loadRooms();
-        },
-        onStompError: (frame: any) => {
-          console.error('WebSocket error:', frame);
-        },
-        onDisconnect: () => {
-          console.log('WebSocket disconnected');
-        },
-      });
+      // SockJS requires HTTP/HTTPS URL, not ws:// or wss://
+      // Convert ws:// to http:// and wss:// to https://
+      let wsUrl = environment.wsUrl;
+      if (wsUrl.startsWith('ws://')) {
+        wsUrl = wsUrl.replace('ws://', 'http://');
+      } else if (wsUrl.startsWith('wss://')) {
+        wsUrl = wsUrl.replace('wss://', 'https://');
+      }
 
-      this.stompClient.activate();
-    } catch (error) {
+      // Skip WebSocket connection if URL is invalid (e.g., localhost from GitHub Pages)
+      if (wsUrl.includes('localhost') && window.location.protocol === 'https:') {
+        console.warn('Cannot connect to localhost WebSocket from HTTPS page. Skipping WebSocket connection.');
+        return;
+      }
+
+      try {
+        const socket = new SockJS(wsUrl);
+        this.stompClient = new Client({
+          webSocketFactory: () => socket as any,
+          reconnectDelay: 5000,
+          heartbeatIncoming: 4000,
+          heartbeatOutgoing: 4000,
+          onConnect: () => {
+            console.log('WebSocket connected');
+            this.loadRooms();
+          },
+          onStompError: (frame: any) => {
+            console.error('WebSocket error:', frame);
+          },
+          onDisconnect: () => {
+            console.log('WebSocket disconnected');
+          },
+        });
+
+        this.stompClient.activate();
+      } catch (socketError: any) {
+        console.error('Failed to create SockJS connection:', socketError);
+        // Don't throw - allow app to continue without WebSocket
+      }
+    } catch (error: any) {
       console.error('Failed to connect WebSocket:', error);
+      // If it's a URL scheme error, it's likely because we're trying to use ws:// from HTTPS
+      if (error?.message?.includes("scheme must be either 'http:' or 'https:'")) {
+        console.warn('WebSocket URL scheme error. Ensure WS_URL uses http:// or https://, not ws:// or wss://');
+      }
       // Don't throw - allow app to continue without WebSocket
     }
   }
