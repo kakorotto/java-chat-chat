@@ -48,11 +48,12 @@ export class AuthService {
       // CSRF token header removed - disabled for now
       // 'X-CSRF-TOKEN': this.csrfToken || '',
     });
+    // CORS disabled for now - removed withCredentials
     const response = await firstValueFrom(
       this.http.post<any>(
         url,
         { username, password },
-        { headers, withCredentials: true }
+        { headers }
       )
     );
     
@@ -78,11 +79,12 @@ export class AuthService {
       // CSRF token header removed - disabled for now
       // 'X-CSRF-TOKEN': this.csrfToken || '',
     });
+    // CORS disabled for now - removed withCredentials
     return firstValueFrom(
       this.http.post<any>(
         url,
         { username, email, password },
-        { headers, withCredentials: true }
+        { headers }
       )
     );
   }

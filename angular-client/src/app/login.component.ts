@@ -30,8 +30,11 @@ export class LoginComponent {
       await this.auth.login(this.username, this.password);
       this.router.navigateByUrl('/chat');
     } catch (e: any) {
+      // CORS disabled - simplified error handling
+      // Silently handle CORS errors (status 0 or network errors)
       if (e?.status === 0 || e?.message?.includes('CORS') || e?.message?.includes('Failed to fetch')) {
-        this.error = 'Cannot connect to backend API. Please ensure the API is running and accessible.';
+        // CORS errors are handled silently - show generic error
+        this.error = e?.error?.message || e?.error || 'Login failed. Please check your connection.';
       } else {
         this.error = e?.error?.message || e?.error || 'Login failed';
       }
