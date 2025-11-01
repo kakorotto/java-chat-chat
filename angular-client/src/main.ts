@@ -1,5 +1,5 @@
 // Import Zone.js FIRST - required for Angular change detection
-import 'zone.js/dist/zone';
+import 'zone.js';
 
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
