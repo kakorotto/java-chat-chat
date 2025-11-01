@@ -41,6 +41,15 @@ jobs:
             npm install
           fi
 
+      - name: Configure production environment
+        working-directory: angular-client
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL || secrets.API_BASE_URL || 'http://localhost:8080/api' }}
+          WS_URL: ${{ vars.WS_URL || secrets.WS_URL || 'ws://localhost:8082/ws' }}
+        run: |
+          sed -i "s|{{API_BASE_URL}}|${API_BASE_URL}|g" src/environments/environment.prod.ts
+          sed -i "s|{{WS_URL}}|${WS_URL}|g" src/environments/environment.prod.ts
+
       - name: Build Angular (production)
         working-directory: angular-client
         run: npx ng build --configuration production --base-href /java-chat-chat/ --deploy-url /java-chat-chat/

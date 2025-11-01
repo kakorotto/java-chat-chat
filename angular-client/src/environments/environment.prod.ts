@@ -1,8 +1,9 @@
+// This file will be updated during build with actual API URLs
+// Set API_BASE_URL and WS_URL environment variables in GitHub Actions
 export const environment = {
   production: true,
-  // TODO: set this to your public API Gateway URL
-  apiBaseUrl: 'https://YOUR-GATEWAY-HOST/api',
-  wsUrl: 'wss://YOUR-GATEWAY-HOST/ws',
+  apiBaseUrl: '{{API_BASE_URL}}',
+  wsUrl: '{{WS_URL}}',
 };
 
 
