@@ -29,7 +29,7 @@ export interface Message {
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
-  private stompClient: Client | null = null;
+  private stompClient: any = null; // Use any since Client is loaded dynamically
   private roomsSubject = new BehaviorSubject<ChatRoom[]>([]);
   private messagesSubject = new BehaviorSubject<Map<number, Message[]>>(new Map());
   private currentRoomId: number | null = null;
