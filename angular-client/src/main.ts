@@ -29,11 +29,7 @@ if (!environment.apiBaseUrl || environment.apiBaseUrl.trim() === '' || environme
 try {
   bootstrapApplication(AppComponent, {
     providers: [
-      provideRouter(routes, {
-        // Enable hash-based routing as fallback if needed
-        // enableTracing: false,
-        // useHash: false, // Don't use hash routing by default
-      }),
+      provideRouter(routes),
       provideHttpClient(),
     ],
   }).catch((err) => {
