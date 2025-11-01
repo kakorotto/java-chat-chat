@@ -18,6 +18,14 @@ if (environment.apiBaseUrl.includes('{{') || environment.wsUrl.includes('{{')) {
   console.error('WS URL:', environment.wsUrl);
 }
 
+// Validate API URL is not empty or just a slash
+if (!environment.apiBaseUrl || environment.apiBaseUrl.trim() === '' || environment.apiBaseUrl === '/') {
+  console.error('ERROR: API Base URL is empty or invalid!');
+  console.error('API URL value:', JSON.stringify(environment.apiBaseUrl));
+  console.error('Please set API_BASE_URL in GitHub Actions variables');
+  console.warn('Application will fail to connect to backend. API calls will be skipped.');
+}
+
 try {
   bootstrapApplication(AppComponent, {
     providers: [
