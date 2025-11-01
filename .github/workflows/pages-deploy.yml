@@ -54,6 +54,11 @@ jobs:
         working-directory: angular-client
         run: npx ng build --configuration production --base-href /java-chat-chat/ --deploy-url /java-chat-chat/
 
+      - name: Create 404.html for GitHub Pages routing
+        run: |
+          # Copy index.html to 404.html for GitHub Pages SPA routing
+          cp angular-client/dist/angular-client/index.html angular-client/dist/angular-client/404.html
+
       - name: Prepare deployment directory
         run: |
           set -e
