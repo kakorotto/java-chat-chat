@@ -64,25 +64,30 @@ export class ChatService {
       return;
     }
 
-    const socket = new SockJS(environment.wsUrl);
-    this.stompClient = new Client({
-      webSocketFactory: () => socket as any,
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-      onConnect: () => {
-        console.log('WebSocket connected');
-        this.loadRooms();
-      },
-      onStompError: (frame) => {
-        console.error('WebSocket error:', frame);
-      },
-      onDisconnect: () => {
-        console.log('WebSocket disconnected');
-      },
-    });
+    try {
+      const socket = new SockJS(environment.wsUrl);
+      this.stompClient = new Client({
+        webSocketFactory: () => socket as any,
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        onConnect: () => {
+          console.log('WebSocket connected');
+          this.loadRooms();
+        },
+        onStompError: (frame) => {
+          console.error('WebSocket error:', frame);
+        },
+        onDisconnect: () => {
+          console.log('WebSocket disconnected');
+        },
+      });
 
-    this.stompClient.activate();
+      this.stompClient.activate();
+    } catch (error) {
+      console.error('Failed to connect WebSocket:', error);
+      // Don't throw - allow app to continue without WebSocket
+    }
   }
 
   disconnectWebSocket() {

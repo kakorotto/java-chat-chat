@@ -51,10 +51,18 @@ jobs:
         run: |
           echo "Configuring environment with API_BASE_URL=${API_BASE_URL}"
           echo "Configuring environment with WS_URL=${WS_URL}"
-          sed -i "s|{{API_BASE_URL}}|${API_BASE_URL}|g" src/environments/environment.prod.ts
-          sed -i "s|{{WS_URL}}|${WS_URL}|g" src/environments/environment.prod.ts
+          # Escape special characters for sed
+          API_BASE_URL_ESC=$(echo "${API_BASE_URL}" | sed 's/[[\.*^$()+?{|]/\\&/g')
+          WS_URL_ESC=$(echo "${WS_URL}" | sed 's/[[\.*^$()+?{|]/\\&/g')
+          sed -i "s|{{API_BASE_URL}}|${API_BASE_URL_ESC}|g" src/environments/environment.prod.ts
+          sed -i "s|{{WS_URL}}|${WS_URL_ESC}|g" src/environments/environment.prod.ts
           echo "Verifying environment file:"
           cat src/environments/environment.prod.ts
+          # Verify replacement worked
+          if grep -q "{{API_BASE_URL}}" src/environments/environment.prod.ts || grep -q "{{WS_URL}}" src/environments/environment.prod.ts; then
+            echo "ERROR: Environment variables were not replaced!"
+            exit 1
+          fi
 
       - name: Build Angular (production)
         working-directory: angular-client
