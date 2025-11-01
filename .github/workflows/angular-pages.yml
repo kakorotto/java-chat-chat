@@ -49,12 +49,31 @@ jobs:
           API_BASE_URL: ${{ vars.API_BASE_URL || secrets.API_BASE_URL || 'http://localhost:8080/api' }}
           WS_URL: ${{ vars.WS_URL || secrets.WS_URL || 'ws://localhost:8082/ws' }}
         run: |
+          echo "Configuring environment with API_BASE_URL=${API_BASE_URL}"
+          echo "Configuring environment with WS_URL=${WS_URL}"
           sed -i "s|{{API_BASE_URL}}|${API_BASE_URL}|g" src/environments/environment.prod.ts
           sed -i "s|{{WS_URL}}|${WS_URL}|g" src/environments/environment.prod.ts
+          echo "Verifying environment file:"
+          cat src/environments/environment.prod.ts
 
       - name: Build Angular (production)
         working-directory: angular-client
         run: npx ng build --configuration production --base-href /java-chat-chat/ --deploy-url /java-chat-chat/
+
+      - name: Verify build output
+        run: |
+          echo "Checking build output..."
+          ls -la angular-client/dist/angular-client/ || echo "Build directory not found!"
+          echo "Checking index.html..."
+          if [ -f angular-client/dist/angular-client/index.html ]; then
+            echo "index.html exists"
+            head -20 angular-client/dist/angular-client/index.html
+          else
+            echo "ERROR: index.html not found!"
+            exit 1
+          fi
+          echo "Checking for JS files..."
+          ls -la angular-client/dist/angular-client/*.js 2>/dev/null || echo "No JS files found!"
 
       - name: Create 404.html for GitHub Pages routing
         run: |
