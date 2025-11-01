@@ -1,0 +1,101 @@
+name: Deploy Both Clients to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'client-app/src/main/resources/**'
+      - 'angular-client/**'
+      - '.github/workflows/pages-deploy.yml'
+      - '.github/workflows/frontend-pages.yml'
+      - '.github/workflows/angular-pages.yml'
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'angular-client/package-lock.json'
+
+      - name: Install Angular dependencies
+        working-directory: angular-client
+        run: npm ci
+
+      - name: Build Angular (production)
+        working-directory: angular-client
+        run: npx ng build --configuration production --base-href /java-chat-chat/ --deploy-url /java-chat-chat/
+
+      - name: Prepare deployment directory
+        run: |
+          set -e
+          mkdir -p dist
+          
+          # Copy Angular build to root
+          cp -r angular-client/dist/angular-client/* dist/
+          
+          # Create client-app subdirectory for Thymeleaf client
+          mkdir -p dist/client-app
+          
+          # Copy static assets for Thymeleaf client
+          rsync -av --delete client-app/src/main/resources/static/ dist/client-app/
+          
+          # Copy HTML templates for Thymeleaf client
+          rsync -av client-app/src/main/resources/templates/ dist/client-app/
+          
+          REPO_NAME=$(basename "$GITHUB_REPOSITORY")
+          BASE_PATH="/${REPO_NAME}/"
+          CLIENT_APP_PATH="${BASE_PATH}client-app/"
+          
+          # Fix Thymeleaf client HTML files - use client-app subdirectory
+          for f in dist/client-app/*.html; do
+            # Insert <base> for client-app subdirectory
+            sed -i "s|<head>|&$(printf '\n')  <base href=\"${CLIENT_APP_PATH}\">|" "$f"
+            # Convert absolute asset paths to relative (they're in same directory)
+            sed -i 's|href="/css/|href="css/|g' "$f"
+            sed -i 's|src="/js/|src="js/|g' "$f"
+            # Convert internal nav to .html files
+            sed -i 's|href="/login"|href="login.html"|g' "$f"
+            sed -i 's|href="/register"|href="register.html"|g' "$f"
+            sed -i 's|href="/chat"|href="chat.html"|g' "$f"
+            sed -i 's|href="/"|href="index.html"|g' "$f"
+          done
+          
+          # Update API base URL in Thymeleaf client JavaScript files
+          for f in dist/client-app/js/*.js; do
+            if [ -f "$f" ]; then
+              # Update API_BASE_URL if it exists in the file
+              sed -i "s|const API_BASE_URL = \"http://localhost:8080/api\";|const API_BASE_URL = \"${PAGES_API_BASE_URL:-http://localhost:8080/api}\";|" "$f" || true
+            fi
+          done
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+

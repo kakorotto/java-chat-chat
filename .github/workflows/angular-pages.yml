@@ -1,0 +1,59 @@
+name: Deploy Angular app to GitHub Pages
+
+# Note: This workflow deploys Angular to root.
+# Use pages-deploy.yml for deploying both clients together.
+# If this runs alone, it will deploy Angular to root.
+# If pages-deploy.yml runs, it will include both clients.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'angular-client/**'
+      - '.github/workflows/angular-pages.yml'
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'angular-client/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: angular-client
+        run: npm ci
+
+      - name: Build Angular (production)
+        working-directory: angular-client
+        run: npx ng build --configuration production --base-href /java-chat-chat/ --deploy-url /java-chat-chat/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: angular-client/dist/angular-client
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

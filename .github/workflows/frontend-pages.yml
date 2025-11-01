@@ -1,11 +1,17 @@
 name: Deploy Frontend to GitHub Pages
 
+# Note: This workflow deploys Thymeleaf client to /client-app subdirectory.
+# Use pages-deploy.yml for deploying both clients together.
+# If this runs alone, it will deploy Thymeleaf client to /client-app.
+# If pages-deploy.yml runs, it will include both clients.
+
 on:
   push:
     branches: [ main ]
     paths:
       - 'client-app/src/main/resources/**'
       - '.github/workflows/frontend-pages.yml'
+  workflow_dispatch:  # Allow manual triggering
 
 permissions:
   contents: read
@@ -21,23 +27,24 @@ jobs:
         with:
           submodules: false
 
-      - name: Prepare static site
+      - name: Prepare static site for client-app subdirectory
         run: |
           set -e
-          mkdir -p dist
+          mkdir -p dist/client-app
           # Copy static assets
-          rsync -av --delete client-app/src/main/resources/static/ dist/
-          # Copy HTML templates as top-level pages
-          rsync -av client-app/src/main/resources/templates/ dist/
+          rsync -av --delete client-app/src/main/resources/static/ dist/client-app/
+          # Copy HTML templates
+          rsync -av client-app/src/main/resources/templates/ dist/client-app/
 
           REPO_NAME=$(basename "$GITHUB_REPOSITORY")
           BASE_PATH="/${REPO_NAME}/"
+          CLIENT_APP_PATH="${BASE_PATH}client-app/"
 
           # Fix absolute links and inject <base> for GitHub Pages routing
-          for f in dist/*.html; do
+          for f in dist/client-app/*.html; do
             # Insert <base> right after <head> - use | as delimiter to avoid conflicts with / in path
             # Using printf to ensure newline is properly handled
-            sed -i "s|<head>|&$(printf '\n')  <base href=\"${BASE_PATH}\">|" "$f"
+            sed -i "s|<head>|&$(printf '\n')  <base href=\"${CLIENT_APP_PATH}\">|" "$f"
             # Convert absolute asset paths to relative
             sed -i 's|href="/css/|href="css/|g' "$f"
             sed -i 's|src="/js/|src="js/|g' "$f"
@@ -45,12 +52,13 @@ jobs:
             # Convert internal nav to .html files
             sed -i 's|href="/login"|href="login.html"|g' "$f"
             sed -i 's|href="/register"|href="register.html"|g' "$f"
+            sed -i 's|href="/chat"|href="chat.html"|g' "$f"
             sed -i 's|href="/"|href="index.html"|g' "$f"
           done
 
           # Optionally override API base URL for Pages via env
           if [ -n "$PAGES_API_BASE_URL" ]; then
-            sed -i "s|^const API_BASE_URL = \"http://localhost:8080/api\";|const API_BASE_URL = \"${PAGES_API_BASE_URL}\";|" dist/js/auth.js || true
+            sed -i "s|^const API_BASE_URL = \"http://localhost:8080/api\";|const API_BASE_URL = \"${PAGES_API_BASE_URL}\";|" dist/client-app/js/auth.js || true
           fi
 
       - name: Upload artifact
