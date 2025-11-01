@@ -26,7 +26,12 @@ try {
     ],
   }).catch((err) => {
     console.error('Error bootstrapping application:', err);
-    console.error('Error stack:', err.stack);
+    console.error('Error details:', {
+      message: err?.message,
+      stack: err?.stack,
+      code: err?.code,
+      component: err?.component,
+    });
     // Display error to user
     document.body.innerHTML = '<div style="padding: 20px; font-family: Arial; color: red;"><h1>Application Error</h1><p>Failed to initialize the application. Please check the console for details.</p><pre>' + JSON.stringify(err, null, 2) + '</pre></div>';
   });
