@@ -3,8 +3,11 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../environments/environment';
-import * as SockJS from 'sockjs-client';
-import { Client, IMessage } from '@stomp/stompjs';
+
+// Use dynamic imports for WebSocket to avoid initialization errors
+let SockJS: any;
+let Client: any;
+type IMessage = any;
 
 export interface ChatRoom {
   id: number;
@@ -65,6 +68,20 @@ export class ChatService {
     }
 
     try {
+      // Lazy load WebSocket libraries only when needed
+      if (!SockJS || !Client) {
+        const SockJSModule = await import('sockjs-client');
+        const StompModule = await import('@stomp/stompjs');
+        
+        SockJS = SockJSModule.default || SockJSModule;
+        Client = StompModule.Client || (StompModule as any).default?.Client || (StompModule as any).default;
+        
+        if (!SockJS || !Client) {
+          console.warn('WebSocket libraries not available, skipping connection');
+          return;
+        }
+      }
+
       const socket = new SockJS(environment.wsUrl);
       this.stompClient = new Client({
         webSocketFactory: () => socket as any,
@@ -75,7 +92,7 @@ export class ChatService {
           console.log('WebSocket connected');
           this.loadRooms();
         },
-        onStompError: (frame) => {
+        onStompError: (frame: any) => {
           console.error('WebSocket error:', frame);
         },
         onDisconnect: () => {
