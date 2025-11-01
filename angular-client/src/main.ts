@@ -1,5 +1,5 @@
-// Import Zone.js FIRST - required for Angular change detection
-import 'zone.js';
+// Zone.js should be loaded via script tag in index.html
+// No need to import here if loaded via CDN
 
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
