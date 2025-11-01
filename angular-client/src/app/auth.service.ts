@@ -29,32 +29,15 @@ export class AuthService {
   }
 
   async getCsrf(): Promise<string | null> {
-    const url = this.getApiUrl('/auth/csrf');
-    if (!url) {
-      console.error('Cannot fetch CSRF: API URL not configured');
-      return null;
-    }
-    
-    try {
-      const res = await firstValueFrom(
-        this.http.get<{ token?: string }>(url, {
-          withCredentials: true,
-        })
-      );
-      this.csrfToken = res.token ?? null;
-      return this.csrfToken;
-    } catch (error: any) {
-      console.error('CSRF fetch error:', error);
-      // If it's a CORS error, it means the backend isn't accessible
-      if (error?.message?.includes('CORS') || error?.status === 0) {
-        console.warn('Backend API not accessible. Check if API is running and CORS is configured.');
-      }
-      return null;
-    }
+    // CSRF disabled for now - skip fetching CSRF token
+    console.log('CSRF token fetching is disabled');
+    return null;
   }
 
   async login(username: string, password: string) {
-    await this.getCsrf();
+    // Skip CSRF for now
+    // await this.getCsrf();
+    
     const url = this.getApiUrl('/auth/signin');
     if (!url) {
       throw new Error('API URL not configured. Cannot login.');
@@ -62,7 +45,8 @@ export class AuthService {
     
     const headers: HttpHeaders = new HttpHeaders({
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': this.csrfToken || '',
+      // CSRF token header removed - disabled for now
+      // 'X-CSRF-TOKEN': this.csrfToken || '',
     });
     const response = await firstValueFrom(
       this.http.post<any>(
@@ -81,7 +65,9 @@ export class AuthService {
   }
 
   async register(username: string, email: string, password: string) {
-    await this.getCsrf();
+    // Skip CSRF for now
+    // await this.getCsrf();
+    
     const url = this.getApiUrl('/auth/signup');
     if (!url) {
       throw new Error('API URL not configured. Cannot register.');
@@ -89,7 +75,8 @@ export class AuthService {
     
     const headers: HttpHeaders = new HttpHeaders({
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': this.csrfToken || '',
+      // CSRF token header removed - disabled for now
+      // 'X-CSRF-TOKEN': this.csrfToken || '',
     });
     return firstValueFrom(
       this.http.post<any>(
