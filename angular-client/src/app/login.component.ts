@@ -30,7 +30,11 @@ export class LoginComponent {
       await this.auth.login(this.username, this.password);
       this.router.navigateByUrl('/chat');
     } catch (e: any) {
-      this.error = e?.error || 'Login failed';
+      if (e?.status === 0 || e?.message?.includes('CORS') || e?.message?.includes('Failed to fetch')) {
+        this.error = 'Cannot connect to backend API. Please ensure the API is running and accessible.';
+      } else {
+        this.error = e?.error?.message || e?.error || 'Login failed';
+      }
     }
   }
 }

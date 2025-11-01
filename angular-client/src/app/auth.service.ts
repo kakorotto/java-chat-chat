@@ -18,7 +18,12 @@ export class AuthService {
       );
       this.csrfToken = res.token ?? null;
       return this.csrfToken;
-    } catch {
+    } catch (error: any) {
+      console.error('CSRF fetch error:', error);
+      // If it's a CORS error, it means the backend isn't accessible
+      if (error?.message?.includes('CORS') || error?.status === 0) {
+        console.warn('Backend API not accessible. Check if API is running and CORS is configured.');
+      }
       return null;
     }
   }
