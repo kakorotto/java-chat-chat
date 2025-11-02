@@ -34,22 +34,10 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins:
-              - "http://localhost:3001"
-              - "http://localhost:3002"
-              - "http://localhost:4200"
-              - "http://localhost:4300"
-              - "https://kakorotto.github.io"
             allowedOriginPatterns:
-              - "https://*.vercel.app"
-              - "https://*.github.io"
-              - "https://*.githubusercontent.com"
+              - "*"
             allowedMethods:
-              - "GET"
-              - "POST"
-              - "PUT"
-              - "DELETE"
-              - "OPTIONS"
+              - "*"
             allowedHeaders:
               - "*"
             allowCredentials: true
